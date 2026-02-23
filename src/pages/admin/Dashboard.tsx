@@ -10,9 +10,10 @@ import { api } from '@/lib/api';
 import {
   LayoutDashboard, FolderGit2, Award, Trophy, Plus, LogOut, Eye, Edit2,
   ChevronRight, Settings, Trash2, X, Save, Upload, Tag, ArrowLeft,
-  Check, ExternalLink, Image, FileText
+  Check, ExternalLink, Image, FileText, RotateCcw
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
+import { ImageCropperModal } from '@/components/admin/ImageCropperModal';
 
 export function AdminDashboard() {
   const { user, isAuthenticated, isLoading: authLoading, signOut } = useAuth();
@@ -31,6 +32,14 @@ export function AdminDashboard() {
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [cropperConfig, setCropperConfig] = useState<{
+    image: string;
+    field: string;
+    type: string;
+    aspectRatio: number;
+    circular: boolean;
+    index?: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -205,6 +214,67 @@ export function AdminDashboard() {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: string, type: string = 'general') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Use cropper for all images
+    const reader = new FileReader();
+    reader.onload = () => {
+      let aspectRatio = 16 / 9;
+      let circular = false;
+
+      if (field === 'profile_photo') {
+        aspectRatio = 1;
+        circular = true;
+      } else if (field === 'image_url' || field === 'badge_url') {
+        aspectRatio = 1;
+      }
+
+      setCropperConfig({
+        image: reader.result as string,
+        field,
+        type,
+        aspectRatio,
+        circular
+      });
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input so the same file can be selected again
+    e.target.value = '';
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    if (!cropperConfig) return;
+
+    setSaving(true);
+    const { field, type, index } = cropperConfig;
+    setCropperConfig(null);
+
+    try {
+      // Create a File object from the blob
+      const file = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' });
+      const result = await api.uploadFile(file, type);
+
+      if (index !== undefined) {
+        // Gallery/Items case
+        const items = [...(formData[field] || [])];
+        items[index] = result.url;
+        updateField(field, items);
+      } else {
+        // Simple field case
+        updateField(field, result.url);
+      }
+
+      showMessage('success', 'Image ajustée et téléchargée');
+    } catch (err: any) {
+      showMessage('error', `Erreur: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ---- Render Helpers ----
 
   const renderInput = (label: string, field: string, type = 'text', required = false) => (
@@ -267,20 +337,49 @@ export function AdminDashboard() {
         <div className="space-y-2">
           {items.map((url: string, idx: number) => (
             <div key={idx} className="flex items-center gap-2">
-              {url && (
-                <img src={url} alt={`img-${idx}`} className="w-10 h-10 rounded object-cover border border-white/10 flex-shrink-0" />
+              {getImageUrl(url) && (
+                <img src={getImageUrl(url)!} alt={`img-${idx}`} className="w-10 h-10 rounded object-cover border border-white/10 flex-shrink-0" />
               )}
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => {
-                  const newItems = [...items];
-                  newItems[idx] = e.target.value;
-                  updateField(field, newItems);
-                }}
-                className="cyber-input text-sm flex-1"
-                placeholder="URL de l'image"
-              />
+              <div className="flex-1 flex flex-col gap-1">
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => {
+                    const newItems = [...items];
+                    newItems[idx] = e.target.value;
+                    updateField(field, newItems);
+                  }}
+                  className="cyber-input text-sm flex-1"
+                  placeholder="URL de l'image"
+                />
+                <label className="text-[10px] text-cyber-mauve hover:text-cyber-mauve-light cursor-pointer inline-flex items-center gap-1 w-fit">
+                  <Upload className="w-2.5 h-2.5" />
+                  Ou upload fichier
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        setCropperConfig({
+                          image: reader.result as string,
+                          field,
+                          type: 'gallery',
+                          aspectRatio: 16 / 9,
+                          circular: false,
+                          index: idx
+                        });
+                      };
+                      reader.readAsDataURL(file);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+              </div>
               <button
                 onClick={() => updateField(field, items.filter((_: string, i: number) => i !== idx))}
                 className="p-2 rounded-lg text-cyber-text-muted hover:text-red-400 hover:bg-red-500/10 flex-shrink-0"
@@ -362,7 +461,19 @@ export function AdminDashboard() {
         {renderInput('Taille equipe', 'team_size', 'number')}
         {renderInput('URL GitHub', 'github_url', 'url')}
         {renderInput('URL Live', 'live_url', 'url')}
-        {renderInput('Image de couverture', 'cover_image', 'url')}
+        <div className="space-y-1">
+          {renderInput('Image de couverture (URL)', 'cover_image', 'url')}
+          <label className="btn-secondary text-[10px] py-1 px-2 cursor-pointer inline-flex items-center gap-1 w-fit">
+            <Upload className="w-2.5 h-2.5" />
+            Upload fichier
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={(e) => handleFileUpload(e, 'cover_image', 'projects')}
+            />
+          </label>
+        </div>
         {renderSelect('Categorie', 'category_id', categories.map(c => ({ value: c.id, label: c.name })))}
         {renderSelect('Statut', 'status', [{ value: 'draft', label: 'Brouillon' }, { value: 'published', label: 'Publie' }])}
       </div>
@@ -407,8 +518,27 @@ export function AdminDashboard() {
         {projects.map(p => (
           <div key={p.id} className="cyber-card p-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0" style={{ background: '#1a1a2e' }}>
-                {p.cover_image ? <img src={p.cover_image} alt={p.title} className="w-full h-full object-cover" /> : <FolderGit2 className="w-6 h-6 text-cyber-mauve m-3" />}
+              <div className="w-12 h-12 rounded-lg overflow-hidden bg-cyber-surface border border-white/5 flex-shrink-0 relative group">
+                {getImageUrl(p.cover_image) ? (
+                  <>
+                    <img src={getImageUrl(p.cover_image)!} alt={p.title} className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => setCropperConfig({
+                        image: getImageUrl(p.cover_image)!,
+                        field: 'cover_image',
+                        type: 'projects',
+                        aspectRatio: 16 / 9,
+                        circular: false
+                      })}
+                      className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Ajuster"
+                    >
+                      <RotateCcw className="w-4 h-4 text-white" />
+                    </button>
+                  </>
+                ) : (
+                  <FolderGit2 className="w-6 h-6 text-cyber-mauve m-3" />
+                )}
               </div>
               <div>
                 <p className="text-cyber-text font-medium">{p.title}</p>
@@ -443,8 +573,32 @@ export function AdminDashboard() {
         {renderInput('Date d\'expiration', 'expiry_date', 'date')}
         {renderInput('ID Credential', 'credential_id')}
         {renderInput('URL Verification', 'verify_url', 'url')}
-        {renderInput('URL Image', 'image_url', 'url')}
-        {renderInput('URL Badge', 'badge_url', 'url')}
+        <div className="space-y-1">
+          {renderInput('URL Image (URL)', 'image_url', 'url')}
+          <label className="btn-secondary text-[10px] py-1 px-2 cursor-pointer inline-flex items-center gap-1 w-fit">
+            <Upload className="w-2.5 h-2.5" />
+            Upload fichier
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={(e) => handleFileUpload(e, 'image_url', 'certifications')}
+            />
+          </label>
+        </div>
+        <div className="space-y-1">
+          {renderInput('URL Badge (URL)', 'badge_url', 'url')}
+          <label className="btn-secondary text-[10px] py-1 px-2 cursor-pointer inline-flex items-center gap-1 w-fit">
+            <Upload className="w-2.5 h-2.5" />
+            Upload fichier
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={(e) => handleFileUpload(e, 'badge_url', 'certifications')}
+            />
+          </label>
+        </div>
         {renderSelect('Niveau', 'level', [
           { value: 'beginner', label: 'Debutant' }, { value: 'intermediate', label: 'Intermediaire' },
           { value: 'advanced', label: 'Avance' }, { value: 'expert', label: 'Expert' }
@@ -472,8 +626,27 @@ export function AdminDashboard() {
         {certifications.map(c => (
           <div key={c.id} className="cyber-card p-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(157, 107, 247, 0.1)' }}>
-                <Award className="w-6 h-6 text-cyber-mauve" />
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 relative group" style={{ background: 'rgba(157, 107, 247, 0.1)' }}>
+                {getImageUrl(c.image_url) ? (
+                  <>
+                    <img src={getImageUrl(c.image_url)!} alt={c.name} className="w-full h-full object-contain rounded" />
+                    <button
+                      onClick={() => setCropperConfig({
+                        image: getImageUrl(c.image_url)!,
+                        field: 'image_url',
+                        type: 'certifications',
+                        aspectRatio: 1,
+                        circular: false
+                      })}
+                      className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Ajuster"
+                    >
+                      <RotateCcw className="w-4 h-4 text-white" />
+                    </button>
+                  </>
+                ) : (
+                  <Award className="w-6 h-6 text-cyber-mauve" />
+                )}
               </div>
               <div>
                 <p className="text-cyber-text font-medium">{c.name}</p>
@@ -563,8 +736,28 @@ export function AdminDashboard() {
         {hackathons.map(h => (
           <div key={h.id} className="cyber-card p-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(34, 197, 94, 0.1)' }}>
-                <Trophy className="w-6 h-6 text-green-400" />
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 relative group" style={{ background: 'rgba(34, 197, 94, 0.1)' }}>
+                {h.images && h.images.length > 0 && getImageUrl(h.images[0]) ? (
+                  <>
+                    <img src={getImageUrl(h.images[0])!} alt={h.name} className="w-full h-full object-cover rounded" />
+                    <button
+                      onClick={() => setCropperConfig({
+                        image: getImageUrl(h.images[0])!,
+                        field: 'images',
+                        type: 'hackathons',
+                        aspectRatio: 16 / 9,
+                        circular: false,
+                        index: 0
+                      })}
+                      className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Ajuster"
+                    >
+                      <RotateCcw className="w-4 h-4 text-white" />
+                    </button>
+                  </>
+                ) : (
+                  <Trophy className="w-6 h-6 text-green-400" />
+                )}
               </div>
               <div>
                 <p className="text-cyber-text font-medium">{h.name}</p>
@@ -653,13 +846,49 @@ export function AdminDashboard() {
             {renderInput('Nom', 'profile_name')}
             {renderInput('Titre', 'profile_title')}
             <div>
-              {renderInput('Photo (URL)', 'profile_photo', 'url')}
-              {formData.profile_photo && (
-                <div className="mt-2 flex items-center gap-3">
-                  <img src={formData.profile_photo} alt="Preview" className="w-16 h-16 rounded-full object-cover border-2 border-cyber-mauve/30" />
-                  <span className="text-xs text-cyber-text-muted">Aperçu</span>
+              <label className="block text-sm text-cyber-text-muted mb-1">Photo de profil</label>
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={formData.profile_photo || ''}
+                  onChange={(e) => updateField('profile_photo', e.target.value)}
+                  className="cyber-input text-sm"
+                  placeholder="URL de la photo ou upload ->"
+                />
+                <div className="flex items-center gap-3">
+                  <label className="btn-secondary text-xs cursor-pointer inline-flex items-center gap-2">
+                    <Upload className="w-3 h-3" />
+                    Upload Image (JPG/PNG)
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, 'profile_photo', 'profile')}
+                    />
+                  </label>
+                  {getImageUrl(formData.profile_photo) && (
+                    <div className="flex items-center gap-3">
+                      <div className="relative group">
+                        <img src={getImageUrl(formData.profile_photo)!} alt="Preview" className="w-12 h-12 rounded-full object-cover border-2 border-cyber-mauve/30" />
+                        <button
+                          onClick={() => setCropperConfig({
+                            image: getImageUrl(formData.profile_photo)!,
+                            field: 'profile_photo',
+                            type: 'profile',
+                            aspectRatio: 1,
+                            circular: true
+                          })}
+                          className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Ajuster"
+                        >
+                          <RotateCcw className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+                      <span className="text-xs text-cyber-text-muted">Aperçu</span>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
             {renderInput('Annees experience', 'years_experience')}
             {renderInput('Nombre de projets', 'projects_count')}
@@ -782,6 +1011,16 @@ export function AdminDashboard() {
         <div className="p-6 lg:p-8">
           {renderContent()}
         </div>
+
+        {cropperConfig && (
+          <ImageCropperModal
+            image={cropperConfig.image}
+            aspectRatio={cropperConfig.aspectRatio}
+            circular={cropperConfig.circular}
+            onCropComplete={handleCropComplete}
+            onCancel={() => setCropperConfig(null)}
+          />
+        )}
       </main>
     </div>
   );

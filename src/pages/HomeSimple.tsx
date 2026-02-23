@@ -3,8 +3,8 @@ import { useProjects } from '@/hooks/useProjects';
 import { useCertifications } from '@/hooks/useCertifications';
 import { useTimeline } from '@/hooks/useTimeline';
 import { useSettings } from '@/hooks/useSettings';
-import { ArrowRight, Calendar, Cloud, Server, Brain, Shield, GitBranch, Code, Award, Trophy, Zap } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ArrowRight, Calendar, Cloud, Server, Brain, Zap, Award, Shield, GitBranch, Code, Trophy } from 'lucide-react';
+import { cn, getImageUrl } from '@/lib/utils';
 
 const iconMap: Record<string, any> = {
   Cloud, Server, Brain, Shield, GitBranch, Code, Award, Trophy, Zap,
@@ -55,9 +55,9 @@ export function HomeSimple() {
 
                 {/* Photo container */}
                 <div className="relative w-40 h-40 sm:w-48 sm:h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden animate-glow-pulse" style={{ border: '3px solid rgba(157, 107, 247, 0.5)', boxShadow: '0 0 40px rgba(157, 107, 247, 0.3), 0 0 80px rgba(157, 107, 247, 0.1), inset 0 0 30px rgba(0,0,0,0.3)' }}>
-                  {settings.profile_photo ? (
+                  {getImageUrl(settings.profile_photo) ? (
                     <img
-                      src={settings.profile_photo}
+                      src={getImageUrl(settings.profile_photo)!}
                       alt={settings.profile_name || 'Mohammed'}
                       className="w-full h-full object-cover"
                     />
@@ -187,8 +187,8 @@ export function HomeSimple() {
                 {projects.map((project) => (
                   <Link key={project.id} to={`/projects/${project.slug}`} className="rounded-xl overflow-hidden transition-all hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(157,107,247,0.2)] group animate-fade-in-up" style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <div className="h-48 overflow-hidden">
-                      {project.cover_image ? (
-                        <img src={project.cover_image} alt={project.title} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                      {getImageUrl(project.cover_image) ? (
+                        <img src={getImageUrl(project.cover_image)!} alt={project.title} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1a1a2e, #2a2a4e)' }}>
                           <Cloud className="w-12 h-12 text-gray-600" />
@@ -254,8 +254,8 @@ export function HomeSimple() {
                 {certifications.map((cert) => (
                   <Link key={cert.id} to={`/certifications/${cert.slug}`} className="p-6 rounded-xl flex items-center gap-4 group transition-all hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(157,107,247,0.2)] animate-fade-in-left block" style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <div className="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(157, 107, 247, 0.1)' }}>
-                      {cert.image_url ? (
-                        <img src={cert.image_url} alt={cert.name} className="w-10 h-10 object-contain rounded" />
+                      {getImageUrl(cert.image_url) ? (
+                        <img src={getImageUrl(cert.image_url)!} alt={cert.name} className="w-10 h-10 object-contain rounded" />
                       ) : (
                         <Award className="w-7 h-7" style={{ color: '#9d6bf7' }} />
                       )}

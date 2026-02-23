@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { ArrowLeft, Award, Calendar, ExternalLink, CheckCircle, Shield } from 'lucide-react';
+import { getImageUrl } from '@/lib/utils';
 
 export function CertificationDetail() {
     const { slug } = useParams<{ slug: string }>();
@@ -49,8 +50,8 @@ export function CertificationDetail() {
                         <div className="flex flex-col md:flex-row items-start gap-8">
                             {/* Badge/Image */}
                             <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(157, 107, 247, 0.1)', border: '1px solid rgba(157, 107, 247, 0.2)' }}>
-                                {cert.image_url ? (
-                                    <img src={cert.image_url} alt={cert.name} className="w-20 h-20 lg:w-28 lg:h-28 object-contain rounded-lg" />
+                                {getImageUrl(cert.image_url) ? (
+                                    <img src={getImageUrl(cert.image_url)!} alt={cert.name} className="w-20 h-20 lg:w-28 lg:h-28 object-contain rounded-lg" />
                                 ) : (
                                     <Award className="w-12 h-12 text-cyber-mauve" />
                                 )}

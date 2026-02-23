@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { ArrowLeft, Calendar, Clock, Tag, BookOpen, ChevronRight } from 'lucide-react';
+import { getImageUrl } from '@/lib/utils';
 
 export function ArticleDetail() {
     const { slug } = useParams<{ slug: string }>();
@@ -55,10 +56,10 @@ export function ArticleDetail() {
                     </Link>
 
                     {/* Cover Image */}
-                    {article.cover_image && (
+                    {getImageUrl(article.cover_image) && (
                         <div className="mb-8 rounded-xl overflow-hidden border border-white/5">
                             <img
-                                src={article.cover_image}
+                                src={getImageUrl(article.cover_image)!}
                                 alt={article.title}
                                 className="w-full h-auto max-h-[400px] object-cover"
                             />

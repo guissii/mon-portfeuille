@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ExternalLink, Award, CheckCircle, Calendar } from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
+import { cn, formatDate, getImageUrl } from '@/lib/utils';
 import type { Certification } from '@/types';
 
 interface CertificationCardProps {
@@ -41,9 +41,9 @@ export function CertificationCard({ certification, variant = 'default', classNam
           'flex-shrink-0 rounded-lg overflow-hidden bg-cyber-surface border border-white/5',
           isCompact ? 'w-12 h-12' : 'w-16 h-16'
         )}>
-          {certification.badge_url ? (
+          {getImageUrl(certification.badge_url) ? (
             <img
-              src={certification.badge_url}
+              src={getImageUrl(certification.badge_url)!}
               alt={certification.name}
               className="w-full h-full object-cover"
               loading="lazy"
@@ -72,7 +72,7 @@ export function CertificationCard({ certification, variant = 'default', classNam
                 {certification.issuer}
               </p>
             </div>
-            
+
             {/* Level Badge */}
             <span className={cn(
               'flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium border',
@@ -89,7 +89,7 @@ export function CertificationCard({ certification, variant = 'default', classNam
                 <Calendar className="w-4 h-4" />
                 <span>Obtenue le {formatDate(certification.issue_date)}</span>
               </div>
-              
+
               {certification.expiry_date && (
                 <span>
                   Expire le {formatDate(certification.expiry_date)}
@@ -122,7 +122,7 @@ export function CertificationCard({ certification, variant = 'default', classNam
             >
               Voir les détails
             </Link>
-            
+
             {hasVerification && (
               <a
                 href={certification.verify_url}

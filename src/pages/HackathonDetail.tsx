@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { ArrowLeft, Trophy, Calendar, Users, Code, ExternalLink, Github, Award, Zap, X, ChevronLeft, ChevronRight, Image } from 'lucide-react';
+import { getImageUrl } from '@/lib/utils';
 
 const resultLabels: Record<string, { label: string; color: string }> = {
     winner: { label: 'Gagnant', color: '#facc15' },
@@ -148,7 +149,7 @@ export function HackathonDetail() {
                                         className="rounded-xl overflow-hidden border border-white/5 hover:border-cyber-mauve/40 transition-all group cursor-pointer"
                                     >
                                         <img
-                                            src={img}
+                                            src={getImageUrl(img) || ''}
                                             alt={`Screenshot ${idx + 1}`}
                                             className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
                                             loading="lazy"
@@ -203,7 +204,7 @@ export function HackathonDetail() {
                         </>
                     )}
                     <img
-                        src={images[lightboxIndex]}
+                        src={getImageUrl(images[lightboxIndex]) || ''}
                         alt={`Screenshot ${lightboxIndex + 1}`}
                         className="max-w-full max-h-[85vh] object-contain rounded-lg"
                         onClick={(e) => e.stopPropagation()}

@@ -216,7 +216,7 @@ export function Engineering() {
 
               <div className="space-y-4">
                 {articles.map((article) => {
-                  const meta = categoryMeta[article.category] || { icon: Code, color: 'text-gray-400', bgColor: 'bg-gray-500/10' };
+                  const meta = (categoryMeta as Record<string, any>)[article.category] || { icon: Code, color: 'text-gray-400', bgColor: 'bg-gray-500/10' };
                   return (
                     <Link key={article.id} to={`/engineering/${article.slug}`} className="cyber-card p-6 block group hover:border-cyber-mauve/30 transition-all">
                       <div className="flex flex-col md:flex-row md:items-center gap-4">

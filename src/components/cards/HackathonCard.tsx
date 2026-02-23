@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Trophy, Users, Calendar, ExternalLink, Github, ArrowRight } from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
+import { cn, formatDate, getImageUrl } from '@/lib/utils';
 import type { Hackathon } from '@/types';
 
 interface HackathonCardProps {
@@ -53,14 +53,14 @@ export function HackathonCard({ hackathon, variant = 'default', className }: Hac
   const result = resultConfig[hackathon.result];
   const ResultIcon = result.icon;
 
-  const mainImage = hackathon.images?.[0];
+  const mainImage = getImageUrl(hackathon.images?.[0]);
 
   if (isTimeline) {
     return (
       <article className={cn('relative pl-8 pb-8 last:pb-0', className)}>
         {/* Timeline line */}
         <div className="absolute left-0 top-0 bottom-0 w-px bg-white/10" />
-        
+
         {/* Timeline dot */}
         <div className={cn(
           'absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full border-2',
@@ -90,7 +90,7 @@ export function HackathonCard({ hackathon, variant = 'default', className }: Hac
                 {hackathon.project_name}
               </p>
             </div>
-            
+
             <div className={cn(
               'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center',
               result.bgColor
@@ -120,7 +120,7 @@ export function HackathonCard({ hackathon, variant = 'default', className }: Hac
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-cyber-card via-cyber-card/50 to-transparent" />
-          
+
           {/* Result Badge */}
           <div className={cn(
             'absolute top-4 left-4 px-3 py-1.5 rounded-lg flex items-center gap-2 border',
@@ -213,7 +213,7 @@ export function HackathonCard({ hackathon, variant = 'default', className }: Hac
             Voir les détails
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
-          
+
           <div className="flex items-center gap-2 ml-auto">
             {hackathon.repo_url && (
               <a

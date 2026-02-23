@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock, Video, MessageSquare, CheckCircle, ArrowRight, Mail, Users, FolderGit2, Award, Trophy, Zap, Send } from 'lucide-react';
+import { Calendar, Clock, Video, MessageSquare, CheckCircle, Users, FolderGit2, Award, Trophy, Zap, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 

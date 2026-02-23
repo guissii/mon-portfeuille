@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
 
 interface AuthState {
@@ -17,49 +18,28 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    let mounted = true;
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setState({
+        user: session?.user ?? null,
+        isLoading: false,
+        isAuthenticated: !!session,
+        error: null,
+      });
+    });
 
-    const initAuth = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-          if (mounted) {
-            setState({
-              user: null,
-              isLoading: false,
-              isAuthenticated: false,
-              error: null,
-            });
-          }
-          return;
-        }
-
-        const { user } = await api.getMe();
-        if (mounted) {
-          setState({
-            user,
-            isLoading: false,
-            isAuthenticated: true,
-            error: null,
-          });
-        }
-      } catch (error) {
-        localStorage.removeItem('auth_token');
-        if (mounted) {
-          setState({
-            user: null,
-            isLoading: false,
-            isAuthenticated: false,
-            error: null,
-          });
-        }
-      }
-    };
-
-    initAuth();
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setState({
+        user: session?.user ?? null,
+        isLoading: false,
+        isAuthenticated: !!session,
+        error: null,
+      });
+    });
 
     return () => {
-      mounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -67,15 +47,8 @@ export function useAuth() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const { user } = await api.login(email, password);
-
-      setState({
-        user,
-        isLoading: false,
-        isAuthenticated: true,
-        error: null,
-      });
-
+      await api.login(email, password);
+      // State is updated via onAuthStateChange listener
       return { success: true, error: null };
     } catch (error) {
       setState(prev => ({
@@ -92,23 +65,13 @@ export function useAuth() {
 
     try {
       await api.logout();
-
-      setState({
-        user: null,
-        isLoading: false,
-        isAuthenticated: false,
-        error: null,
-      });
-
       return { success: true, error: null };
     } catch (error) {
-      localStorage.removeItem('auth_token');
-      setState({
-        user: null,
+      setState(prev => ({
+        ...prev,
         isLoading: false,
-        isAuthenticated: false,
         error: error as Error,
-      });
+      }));
       return { success: false, error: error as Error };
     }
   }, []);

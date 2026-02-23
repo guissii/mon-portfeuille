@@ -8,6 +8,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { ProjectCard } from '@/components/cards/ProjectCard';
 import { CertificationCard } from '@/components/cards/CertificationCard';
 import { HackathonCard } from '@/components/cards/HackathonCard';
+import { getImageUrl } from '@/lib/utils';
 
 // SEO
 const seoData = {
@@ -21,7 +22,7 @@ export function Home() {
   const { hackathons, isLoading: hacksLoading } = useHackathons({ featured: true, status: 'published', limit: 3 });
   const { settings } = useSettings();
 
-  const profilePhoto = settings.profile_photo;
+  const profilePhoto = getImageUrl(settings.profile_photo);
   const profileName = settings.profile_name || 'Mohammed';
 
   useEffect(() => {
@@ -148,13 +149,16 @@ export function Home() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-cyber-card flex items-center justify-center">
+                          <div className="w-full h-full bg-cyber-card flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                             <div className="text-center">
-                              <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-cyber-mauve/10 flex items-center justify-center">
-                                <Zap className="w-10 h-10 text-cyber-mauve" />
+                              <div className="w-24 h-24 mx-auto mb-2 rounded-full bg-gradient-to-br from-cyber-mauve/20 to-cyber-yellow/10 flex items-center justify-center border border-cyber-mauve/30">
+                                <span className="text-5xl font-bold gradient-text font-mono">
+                                  {profileName.charAt(0)}
+                                </span>
                               </div>
-                              <p className="text-cyber-text font-mono text-sm">Infrastructure</p>
-                              <p className="text-cyber-mauve font-mono text-xs">as Code</p>
+                              <p className="text-cyber-text-muted font-mono text-xs uppercase tracking-widest">
+                                {profileName}
+                              </p>
                             </div>
                           </div>
                         )}

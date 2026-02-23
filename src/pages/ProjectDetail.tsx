@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useProjects } from '@/hooks/useProjects';
 import { ArrowLeft, Github, ExternalLink, BookOpen, ChevronRight, Server, Shield, Zap, Lightbulb } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getImageUrl } from '@/lib/utils';
 import type { Project } from '@/types';
 
 export function ProjectDetail() {
@@ -153,10 +154,10 @@ export function ProjectDetail() {
           </div>
 
           {/* Cover Image */}
-          {project.cover_image && (
+          {getImageUrl(project.cover_image) && (
             <div className="mb-12 rounded-xl overflow-hidden border border-white/5">
               <img
-                src={project.cover_image}
+                src={getImageUrl(project.cover_image)!}
                 alt={project.title}
                 className="w-full h-auto max-h-[500px] object-cover"
               />
@@ -314,10 +315,10 @@ export function ProjectDetail() {
                   </h2>
                   <p className="text-cyber-text-muted mb-6">{project.architecture.overview}</p>
 
-                  {project.architecture.diagram_url && (
+                  {getImageUrl(project.architecture.diagram_url) && (
                     <div className="rounded-xl overflow-hidden border border-white/5 mb-6">
                       <img
-                        src={project.architecture.diagram_url}
+                        src={getImageUrl(project.architecture.diagram_url)!}
                         alt="Architecture diagram"
                         className="w-full h-auto"
                       />
@@ -478,7 +479,7 @@ export function ProjectDetail() {
                 {project.gallery.map((image, index) => (
                   <div key={index} className="rounded-xl overflow-hidden border border-white/5">
                     <img
-                      src={image}
+                      src={getImageUrl(image) || ''}
                       alt={`${project.title} - Image ${index + 1}`}
                       className="w-full h-48 object-cover hover:scale-105 transition-transform"
                       loading="lazy"

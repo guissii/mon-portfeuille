@@ -5,6 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function getImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  // Fallback for local dev if needed, or just return as is
+  return url;
+}
+
 // Slug generator
 export function generateSlug(text: string): string {
   return text

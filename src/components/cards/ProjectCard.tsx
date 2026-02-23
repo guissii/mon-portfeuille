@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ExternalLink, Github, ArrowRight, Star } from 'lucide-react';
-import { cn, truncate } from '@/lib/utils';
+import { cn, truncate, getImageUrl } from '@/lib/utils';
 import type { Project } from '@/types';
 
 interface ProjectCardProps {
@@ -13,7 +13,7 @@ export function ProjectCard({ project, variant = 'default', className }: Project
   const isFeatured = variant === 'featured';
   const isCompact = variant === 'compact';
 
-  const mainImage = project.cover_image || project.gallery?.[0];
+  const mainImage = getImageUrl(project.cover_image || project.gallery?.[0]);
 
   return (
     <article
@@ -54,10 +54,10 @@ export function ProjectCard({ project, variant = 'default', className }: Project
             </div>
           </div>
         )}
-        
+
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-cyber-card via-cyber-card/50 to-transparent" />
-        
+
         {/* Hover Glow */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-cyber-mauve/5" />
       </div>
@@ -121,7 +121,7 @@ export function ProjectCard({ project, variant = 'default', className }: Project
             Voir le projet
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
-          
+
           <div className="flex items-center gap-2 ml-auto">
             {project.github_url && (
               <a
