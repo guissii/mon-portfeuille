@@ -9,8 +9,8 @@ import { useSettings } from '@/hooks/useSettings';
 import { api } from '@/lib/api';
 import {
   LayoutDashboard, FolderGit2, Award, Trophy, Plus, LogOut, Eye, Edit2,
-  ChevronRight, Settings, Trash2, X, Save, Upload, Tag, ArrowLeft,
-  Check, ExternalLink, Image, FileText, RotateCcw
+  Settings, Trash2, X, Save, Upload, Tag,
+  Check, Image, FileText, RotateCcw
 } from 'lucide-react';
 import { cn, getImageUrl } from '@/lib/utils';
 import { ImageCropperModal } from '@/components/admin/ImageCropperModal';
@@ -23,7 +23,7 @@ export function AdminDashboard() {
   const { projects, refetch: refetchProjects, deleteProject } = useProjects();
   const { certifications, refetch: refetchCertifications, deleteCertification } = useCertifications();
   const { hackathons, refetch: refetchHackathons, deleteHackathon } = useHackathons();
-  const { categories, createCategory, updateCategory, deleteCategory, refetch: refetchCategories } = useCategories();
+  const { categories, createCategory, updateCategory, deleteCategory } = useCategories();
   const { settings, updateSettings } = useSettings();
 
   const [activeTab, setActiveTab] = useState('dashboard');

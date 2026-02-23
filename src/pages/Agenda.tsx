@@ -139,7 +139,7 @@ export function Agenda() {
                 {/* Main trunk */}
                 <div className="absolute left-1/2 top-0 bottom-0 w-1 -translate-x-1/2" style={{ background: 'linear-gradient(to bottom, #9d6bf7, #facc15, #22c55e, rgba(157,107,247,0.2))' }} />
 
-                {Object.entries(eventsByYear).sort(([a], [b]) => parseInt(b) - parseInt(a)).map(([year, events], yearIdx) => (
+                {Object.entries(eventsByYear).sort(([a], [b]) => parseInt(b) - parseInt(a)).map(([year, events]) => (
                   <div key={year} className="relative mb-12">
                     {/* Year node */}
                     <div className="flex items-center justify-center mb-6 relative z-10">

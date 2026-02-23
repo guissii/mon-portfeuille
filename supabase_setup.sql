@@ -176,7 +176,36 @@ CREATE POLICY "Admin All Timeline" ON timeline_events FOR ALL TO authenticated U
 CREATE POLICY "Admin All Settings" ON site_settings FOR ALL TO authenticated USING (true);
 CREATE POLICY "Admin All Bookings" ON bookings FOR ALL TO authenticated USING (true);
 
--- 3. Storage Configuration (Manual step in Dashboard)
+-- 3. Storage Configuration
 -- -------------------------------------------------------
--- Create a public bucket named 'portfolio'
--- Enable public read access to the bucket
+
+-- Create the 'portfolio' bucket if it doesn't exist
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('portfolio', 'portfolio', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Set up Storage Policies
+-- 1. Give public read access to the portfolio bucket
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+CREATE POLICY "Public Access"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'portfolio' );
+
+-- 2. Give authenticated users (Admin) full access to the portfolio bucket
+DROP POLICY IF EXISTS "Admin Insert Access" ON storage.objects;
+CREATE POLICY "Admin Insert Access"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK ( bucket_id = 'portfolio' );
+
+DROP POLICY IF EXISTS "Admin Update Access" ON storage.objects;
+CREATE POLICY "Admin Update Access"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING ( bucket_id = 'portfolio' );
+
+DROP POLICY IF EXISTS "Admin Delete Access" ON storage.objects;
+CREATE POLICY "Admin Delete Access"
+ON storage.objects FOR DELETE
+TO authenticated
+USING ( bucket_id = 'portfolio' );

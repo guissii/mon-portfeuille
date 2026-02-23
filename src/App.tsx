@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { HomeSimple as Home } from '@/pages/HomeSimple';
@@ -34,6 +35,7 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <BrowserRouter>
+      <Analytics />
       <Routes>
         {/* Routes publiques */}
         <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />

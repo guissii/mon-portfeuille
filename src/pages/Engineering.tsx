@@ -215,31 +215,28 @@ export function Engineering() {
               )}
 
               <div className="space-y-4">
-                {articles.map((article) => {
-                  const meta = (categoryMeta as Record<string, any>)[article.category] || { icon: Code, color: 'text-gray-400', bgColor: 'bg-gray-500/10' };
-                  return (
-                    <Link key={article.id} to={`/engineering/${article.slug}`} className="cyber-card p-6 block group hover:border-cyber-mauve/30 transition-all">
-                      <div className="flex flex-col md:flex-row md:items-center gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="cyber-tag text-xs capitalize">{article.category}</span>
-                            <span className="text-cyber-text-muted text-sm">{article.read_time} min</span>
-                          </div>
-                          <h3 className="text-lg font-semibold text-cyber-text group-hover:text-cyber-mauve transition-colors mb-2">{article.title}</h3>
-                          <p className="text-cyber-text-muted text-sm line-clamp-2">{article.excerpt}</p>
-                          {article.tags && article.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mt-3">
-                              {article.tags.slice(0, 4).map((t: string) => (
-                                <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-cyber-text-muted">{t}</span>
-                              ))}
-                            </div>
-                          )}
+                {articles.map((article) => (
+                  <Link key={article.id} to={`/engineering/${article.slug}`} className="cyber-card p-6 block group hover:border-cyber-mauve/30 transition-all">
+                    <div className="flex flex-col md:flex-row md:items-center gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="cyber-tag text-xs capitalize">{article.category}</span>
+                          <span className="text-cyber-text-muted text-sm">{article.read_time} min</span>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-cyber-mauve opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                        <h3 className="text-lg font-semibold text-cyber-text group-hover:text-cyber-mauve transition-colors mb-2">{article.title}</h3>
+                        <p className="text-cyber-text-muted text-sm line-clamp-2">{article.excerpt}</p>
+                        {article.tags && article.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-3">
+                            {article.tags.slice(0, 4).map((t: string) => (
+                              <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-cyber-text-muted">{t}</span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </Link>
-                  );
-                })}
+                      <ArrowRight className="w-5 h-5 text-cyber-mauve opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           )}
