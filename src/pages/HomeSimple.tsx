@@ -3,7 +3,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useCertifications } from '@/hooks/useCertifications';
 import { useTimeline } from '@/hooks/useTimeline';
 import { useSettings } from '@/hooks/useSettings';
-import { ArrowRight, Calendar, Cloud, Server, Brain, Zap, Award, Shield, GitBranch, Code, Trophy, Globe, Cpu } from 'lucide-react';
+import { ArrowRight, Calendar, Cloud, Server, Brain, Zap, Award, Shield, GitBranch, Code, Trophy, Globe } from 'lucide-react';
 import { cn, getImageUrl } from '@/lib/utils';
 import { FadeIn, StaggerContainer, StaggerItem, ScaleIn } from '@/components/motion/AnimatedSection';
 import { TypewriterText } from '@/components/motion/TypewriterText';

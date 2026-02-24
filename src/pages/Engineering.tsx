@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
-import { Server, Zap, Shield, DollarSign, AlertTriangle, BookOpen, ArrowRight, Code, GitBranch, Activity, GraduationCap, Briefcase, MapPin, Calendar, ChevronDown, ChevronUp, Layers, Cpu, Cloud, Terminal } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Server, Zap, Shield, DollarSign, AlertTriangle, BookOpen, ArrowRight, Code, GitBranch, Activity, GraduationCap, Briefcase, MapPin, Calendar, ChevronDown, ChevronUp, Layers, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FadeIn, StaggerContainer, StaggerItem, ScaleIn } from '@/components/motion/AnimatedSection';
 
@@ -170,7 +169,7 @@ export function Engineering() {
                     <div className="absolute left-6 top-4 bottom-4 w-px bg-gradient-to-b from-cyber-mauve/50 via-cyber-mauve/10 to-transparent" />
 
                     <StaggerContainer staggerDelay={0.15} className="space-y-8">
-                      {experiences.map((exp, idx) => (
+                      {experiences.map((exp) => (
                         <StaggerItem key={exp.id}>
                           <div className="relative pl-16 group">
                             {/* Node */}
@@ -294,7 +293,7 @@ export function Engineering() {
                 ) : (
                   <div className="grid md:grid-cols-2 gap-6">
                     <StaggerContainer staggerDelay={0.1}>
-                      {education.map((edu, idx) => (
+                      {education.map((edu) => (
                         <StaggerItem key={edu.id}>
                           <div
                             className="h-full rounded-2xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300"

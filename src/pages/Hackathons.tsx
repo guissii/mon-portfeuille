@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useHackathons } from '@/hooks/useHackathons';
 import { HackathonCard } from '@/components/cards/HackathonCard';
-import { Trophy, Zap, Users, Cpu, Cloud, Server, Lock, Layers, SlidersHorizontal, Briefcase } from 'lucide-react';
+import { Trophy, Zap, Cpu, Cloud, Server, Lock, Layers, SlidersHorizontal, Briefcase } from 'lucide-react';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/motion/AnimatedSection';
 import { AnimatedCounter } from '@/components/motion/AnimatedCounter';
 import { motion } from 'framer-motion';

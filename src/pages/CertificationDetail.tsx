@@ -58,7 +58,6 @@ function ValidityTimeline({ issueDate, expiryDate }: { issueDate: string; expiry
     const expiry = expiryDate ? new Date(expiryDate) : null;
 
     let progress = 100;
-    let status = 'permanent';
     let statusLabel = 'Permanente';
     let statusColor = '#4ade80';
 
@@ -68,15 +67,12 @@ function ValidityTimeline({ issueDate, expiryDate }: { issueDate: string; expiry
         progress = Math.min(Math.max((elapsed / total) * 100, 0), 100);
 
         if (now > expiry) {
-            status = 'expired';
             statusLabel = 'Expirée';
             statusColor = '#ef4444';
         } else if (progress > 80) {
-            status = 'expiring';
             statusLabel = 'Expire bientôt';
             statusColor = '#f97316';
         } else {
-            status = 'active';
             statusLabel = 'Active';
             statusColor = '#4ade80';
         }
