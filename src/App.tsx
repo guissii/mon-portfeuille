@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
+import { motion } from 'framer-motion';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { HomeSimple as Home } from '@/pages/HomeSimple';
@@ -21,7 +22,15 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-cyber-black">
       <Header />
-      <main>{children}</main>
+      <main>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          {children}
+        </motion.div>
+      </main>
       <Footer />
     </div>
   );

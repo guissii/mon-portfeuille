@@ -52,7 +52,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
 // POST /api/hackathons (admin)
 router.post('/', authMiddleware, async (req: Request, res: Response) => {
     try {
-        const { name, slug, organizer, event_date, duration, result: hackResult, project_name, project_description, linked_project_id, role, team_size, team_members, problem, solution, implementation, learnings, tech_stack, demo_url, repo_url, slides_url, video_url, certificate_url, images, status, featured } = req.body;
+        const { name, slug, organizer, event_date, duration, result: hackResult, score, show_score, show_position, icon, project_name, project_description, linked_project_id, role, team_size, team_members, problem, solution, implementation, learnings, tech_stack, demo_url, repo_url, slides_url, video_url, certificate_url, images, status, featured } = req.body;
 
         if (!name || !slug) {
             res.status(400).json({ error: 'Nom et slug requis' });
@@ -60,10 +60,10 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
         }
 
         const dbResult = await pool.query(
-            `INSERT INTO hackathons (name, slug, organizer, event_date, duration, result, project_name, project_description, linked_project_id, role, team_size, team_members, problem, solution, implementation, learnings, tech_stack, demo_url, repo_url, slides_url, video_url, certificate_url, images, status, featured)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
+            `INSERT INTO hackathons (name, slug, organizer, event_date, duration, result, score, show_score, show_position, icon, project_name, project_description, linked_project_id, role, team_size, team_members, problem, solution, implementation, learnings, tech_stack, demo_url, repo_url, slides_url, video_url, certificate_url, images, status, featured)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29)
        RETURNING *`,
-            [name, slug, organizer, event_date || null, duration, hackResult, project_name, project_description, linked_project_id || null, role, team_size, team_members || [], problem, solution, implementation, learnings || [], tech_stack || [], demo_url || null, repo_url || null, slides_url || null, video_url || null, certificate_url || null, images || [], status || 'draft', featured || false]
+            [name, slug, organizer, event_date || null, duration, hackResult, score || null, show_score ?? false, show_position ?? true, icon || 'Trophy', project_name, project_description, linked_project_id || null, role, team_size, team_members || [], problem, solution, implementation, learnings || [], tech_stack || [], demo_url || null, repo_url || null, slides_url || null, video_url || null, certificate_url || null, images || [], status || 'draft', featured || false]
         );
 
         res.status(201).json(dbResult.rows[0]);
@@ -80,8 +80,9 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
 // PUT /api/hackathons/:id (admin)
 router.put('/:id', authMiddleware, async (req: Request, res: Response) => {
     try {
-        const { name, slug, organizer, event_date, duration, result: hackResult, project_name, project_description, linked_project_id, role, team_size, team_members, problem, solution, implementation, learnings, tech_stack, demo_url, repo_url, slides_url, video_url, certificate_url, images, status, featured } = req.body;
+        const { name, slug, organizer, event_date, duration, result: hackResult, score, show_score, show_position, icon, project_name, project_description, linked_project_id, role, team_size, team_members, problem, solution, implementation, learnings, tech_stack, demo_url, repo_url, slides_url, video_url, certificate_url, images, status, featured } = req.body;
 
+        // COALESCE for required fields; direct assignment for nullable/boolean fields
         const dbResult = await pool.query(
             `UPDATE hackathons SET
         name = COALESCE($1, name),
@@ -90,29 +91,33 @@ router.put('/:id', authMiddleware, async (req: Request, res: Response) => {
         event_date = COALESCE($4, event_date),
         duration = COALESCE($5, duration),
         result = COALESCE($6, result),
-        project_name = COALESCE($7, project_name),
-        project_description = COALESCE($8, project_description),
-        linked_project_id = COALESCE($9, linked_project_id),
-        role = COALESCE($10, role),
-        team_size = COALESCE($11, team_size),
-        team_members = COALESCE($12, team_members),
-        problem = COALESCE($13, problem),
-        solution = COALESCE($14, solution),
-        implementation = COALESCE($15, implementation),
-        learnings = COALESCE($16, learnings),
-        tech_stack = COALESCE($17, tech_stack),
-        demo_url = COALESCE($18, demo_url),
-        repo_url = COALESCE($19, repo_url),
-        slides_url = COALESCE($20, slides_url),
-        video_url = COALESCE($21, video_url),
-        certificate_url = COALESCE($22, certificate_url),
-        images = COALESCE($23, images),
-        status = COALESCE($24, status),
-        featured = COALESCE($25, featured),
+        score = $7,
+        show_score = COALESCE($8, show_score),
+        show_position = COALESCE($9, show_position),
+        icon = COALESCE($10, icon),
+        project_name = COALESCE($11, project_name),
+        project_description = $12,
+        linked_project_id = $13,
+        role = $14,
+        team_size = COALESCE($15, team_size),
+        team_members = COALESCE($16, team_members),
+        problem = $17,
+        solution = $18,
+        implementation = $19,
+        learnings = COALESCE($20, learnings),
+        tech_stack = COALESCE($21, tech_stack),
+        demo_url = $22,
+        repo_url = $23,
+        slides_url = $24,
+        video_url = $25,
+        certificate_url = $26,
+        images = COALESCE($27, images),
+        status = COALESCE($28, status),
+        featured = COALESCE($29, featured),
         updated_at = NOW()
-       WHERE id = $26
+       WHERE id = $30
        RETURNING *`,
-            [name, slug, organizer, event_date, duration, hackResult, project_name, project_description, linked_project_id, role, team_size, team_members, problem, solution, implementation, learnings, tech_stack, demo_url, repo_url, slides_url, video_url, certificate_url, images, status, featured, req.params.id]
+            [name, slug, organizer, event_date, duration, hackResult, score || null, show_score, show_position, icon, project_name, project_description || null, linked_project_id || null, role || null, team_size, team_members, problem || null, solution || null, implementation || null, learnings, tech_stack, demo_url || null, repo_url || null, slides_url || null, video_url || null, certificate_url || null, images, status, featured, req.params.id]
         );
 
         if (dbResult.rows.length === 0) {

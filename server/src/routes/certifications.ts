@@ -52,7 +52,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
 // POST /api/certifications (admin)
 router.post('/', authMiddleware, async (req: Request, res: Response) => {
     try {
-        const { name, slug, issuer, issue_date, expiry_date, credential_id, verify_url, description, skills, image_url, badge_url, level, status, featured } = req.body;
+        const { name, slug, issuer, issue_date, expiry_date, credential_id, verify_url, description, skills, image_url, badge_url, gallery, level, status, featured } = req.body;
 
         if (!name || !slug || !issuer || !issue_date) {
             res.status(400).json({ error: 'Nom, slug, emetteur et date requis' });
@@ -60,10 +60,10 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
         }
 
         const result = await pool.query(
-            `INSERT INTO certifications (name, slug, issuer, issue_date, expiry_date, credential_id, verify_url, description, skills, image_url, badge_url, level, status, featured)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+            `INSERT INTO certifications (name, slug, issuer, issue_date, expiry_date, credential_id, verify_url, description, skills, image_url, badge_url, gallery, level, status, featured)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
        RETURNING *`,
-            [name, slug, issuer, issue_date, expiry_date || null, credential_id || null, verify_url || null, description || null, skills || [], image_url || null, badge_url || null, level || 'intermediate', status || 'draft', featured || false]
+            [name, slug, issuer, issue_date, expiry_date || null, credential_id || null, verify_url || null, description || null, skills || [], image_url || null, badge_url || null, gallery || [], level || 'intermediate', status || 'draft', featured || false]
         );
 
         res.status(201).json(result.rows[0]);
@@ -80,28 +80,31 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
 // PUT /api/certifications/:id (admin)
 router.put('/:id', authMiddleware, async (req: Request, res: Response) => {
     try {
-        const { name, slug, issuer, issue_date, expiry_date, credential_id, verify_url, description, skills, image_url, badge_url, level, status, featured } = req.body;
+        const { name, slug, issuer, issue_date, expiry_date, credential_id, verify_url, description, skills, image_url, badge_url, gallery, level, status, featured } = req.body;
 
+        // Use COALESCE only for required fields; nullable fields use direct assignment
+        // so that null/empty values can clear previously set data (e.g. expiry_date)
         const result = await pool.query(
             `UPDATE certifications SET
         name = COALESCE($1, name),
         slug = COALESCE($2, slug),
         issuer = COALESCE($3, issuer),
         issue_date = COALESCE($4, issue_date),
-        expiry_date = COALESCE($5, expiry_date),
-        credential_id = COALESCE($6, credential_id),
-        verify_url = COALESCE($7, verify_url),
-        description = COALESCE($8, description),
+        expiry_date = $5,
+        credential_id = $6,
+        verify_url = $7,
+        description = $8,
         skills = COALESCE($9, skills),
-        image_url = COALESCE($10, image_url),
-        badge_url = COALESCE($11, badge_url),
-        level = COALESCE($12, level),
-        status = COALESCE($13, status),
-        featured = COALESCE($14, featured),
+        image_url = $10,
+        badge_url = $11,
+        gallery = COALESCE($12, gallery),
+        level = COALESCE($13, level),
+        status = COALESCE($14, status),
+        featured = COALESCE($15, featured),
         updated_at = NOW()
-       WHERE id = $15
+       WHERE id = $16
        RETURNING *`,
-            [name, slug, issuer, issue_date, expiry_date, credential_id, verify_url, description, skills, image_url, badge_url, level, status, featured, req.params.id]
+            [name, slug, issuer, issue_date, expiry_date || null, credential_id || null, verify_url || null, description || null, skills, image_url || null, badge_url || null, gallery || [], level, status, featured, req.params.id]
         );
 
         if (result.rows.length === 0) {

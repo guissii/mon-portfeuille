@@ -112,6 +112,7 @@ export interface Certification extends BaseEntity {
   skills: string[];
   image_url?: string;
   badge_url?: string;
+  gallery?: string[];
   level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
 }
 
@@ -123,6 +124,10 @@ export interface Hackathon extends BaseEntity {
   event_date: string;
   duration: string;
   result: 'winner' | 'finalist' | 'top3' | 'top5' | 'participant';
+  score?: number;
+  show_score: boolean;
+  show_position: boolean;
+  icon?: string;
   project_name: string;
   project_description: string;
   role: string;
@@ -137,6 +142,7 @@ export interface Hackathon extends BaseEntity {
   repo_url?: string;
   slides_url?: string;
   video_url?: string;
+  certificate_url?: string;
   images: string[];
 }
 

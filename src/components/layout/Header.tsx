@@ -43,22 +43,31 @@ export function Header() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
         isScrolled
-          ? 'bg-cyber-black/80 backdrop-blur-cyber border-b border-white/5'
-          : 'bg-transparent'
+          ? 'py-0 border-b border-white/5'
+          : 'py-1'
       )}
+      style={isScrolled ? {
+        background: 'rgba(10, 10, 20, 0.75)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+      } : { background: 'transparent' }}
     >
       <div className="section-padding">
         <div className="container-max">
-          <div className="flex items-center justify-between h-16 lg:h-20">
+          <div className={cn(
+            'flex items-center justify-between transition-all duration-500',
+            isScrolled ? 'h-14 lg:h-16' : 'h-16 lg:h-20'
+          )}>
             {/* Logo */}
             <Link
               to="/"
               className="flex items-center gap-3 group focus-ring rounded-lg"
               aria-label="Accueil"
             >
-              <div className="relative w-10 h-10 flex items-center justify-center bg-cyber-card rounded-lg border border-cyber-yellow/30 group-hover:border-cyber-yellow transition-colors">
+              <div className="relative w-10 h-10 flex items-center justify-center bg-cyber-card rounded-lg border border-cyber-yellow/30 group-hover:border-cyber-yellow transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(250,204,21,0.3)]">
                 <span className="text-cyber-yellow font-bold text-lg font-mono">M</span>
                 <div className="absolute inset-0 rounded-lg bg-cyber-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -75,13 +84,24 @@ export function Header() {
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus-ring',
+                    'relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 focus-ring',
                     isActive(item.href)
-                      ? 'text-cyber-mauve bg-cyber-mauve/10'
+                      ? 'text-cyber-mauve'
                       : 'text-cyber-text-muted hover:text-cyber-text hover:bg-white/5'
                   )}
                 >
                   {item.label}
+                  {/* Animated active underline */}
+                  {isActive(item.href) && (
+                    <span
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] rounded-full"
+                      style={{
+                        width: '60%',
+                        background: 'linear-gradient(90deg, transparent, #9d6bf7, transparent)',
+                        boxShadow: '0 0 8px rgba(157, 107, 247, 0.5)',
+                      }}
+                    />
+                  )}
                 </Link>
               ))}
             </nav>

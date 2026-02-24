@@ -10,7 +10,7 @@ import { api } from '@/lib/api';
 import {
   LayoutDashboard, FolderGit2, Award, Trophy, Plus, LogOut, Eye, Edit2,
   Settings, Trash2, X, Save, Upload, Tag,
-  Check, Image, FileText, RotateCcw
+  Check, Image, FileText, RotateCcw, Calendar, CheckCircle, Clock
 } from 'lucide-react';
 import { cn, getImageUrl } from '@/lib/utils';
 import { ImageCropperModal } from '@/components/admin/ImageCropperModal';
@@ -32,6 +32,7 @@ export function AdminDashboard() {
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [bookings, setBookings] = useState<any[]>([]);
   const [cropperConfig, setCropperConfig] = useState<{
     image: string;
     field: string;
@@ -51,6 +52,21 @@ export function AdminDashboard() {
     const path = location.pathname.replace('/admin', '').replace('/', '');
     if (path) setActiveTab(path || 'dashboard');
   }, [location.pathname]);
+
+  const fetchBookings = async () => {
+    try {
+      const data = await api.getBookings();
+      setBookings(data);
+    } catch (err) {
+      console.error('Failed to fetch bookings', err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'bookings') {
+      fetchBookings();
+    }
+  }, [activeTab]);
 
   const handleLogout = async () => {
     await signOut();
@@ -78,6 +94,7 @@ export function AdminDashboard() {
     { label: 'Certifications', id: 'certifications', icon: Award },
     { label: 'Hackathons', id: 'hackathons', icon: Trophy },
     { label: 'Categories', id: 'categories', icon: Tag },
+    { label: 'Reservations', id: 'bookings', icon: Calendar },
     { label: 'Parametres', id: 'settings', icon: Settings },
   ];
 
@@ -287,6 +304,31 @@ export function AdminDashboard() {
         className="cyber-input text-sm"
         required={required}
       />
+    </div>
+  );
+
+  const renderDateInput = (label: string, field: string, required = false) => (
+    <div>
+      <label className="block text-sm text-cyber-text-muted mb-1">{label}{required && ' *'}</label>
+      <div className="flex items-center gap-2">
+        <input
+          type="date"
+          value={formData[field] || ''}
+          onChange={(e) => updateField(field, e.target.value)}
+          className="cyber-input text-sm flex-1"
+          required={required}
+        />
+        {formData[field] && !required && (
+          <button
+            type="button"
+            onClick={() => updateField(field, null)}
+            className="p-2 rounded-lg text-cyber-text-muted hover:text-red-400 hover:bg-red-500/10 transition-colors flex-shrink-0"
+            title="Supprimer la date"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   );
 
@@ -569,8 +611,8 @@ export function AdminDashboard() {
         {renderInput('Nom', 'name', 'text', true)}
         {renderInput('Slug', 'slug', 'text', true)}
         {renderInput('Emetteur', 'issuer', 'text', true)}
-        {renderInput('Date d\'obtention', 'issue_date', 'date', true)}
-        {renderInput('Date d\'expiration', 'expiry_date', 'date')}
+        {renderDateInput('Date d\'obtention', 'issue_date', true)}
+        {renderDateInput('Date d\'expiration', 'expiry_date')}
         {renderInput('ID Credential', 'credential_id')}
         {renderInput('URL Verification', 'verify_url', 'url')}
         <div className="space-y-1">
@@ -607,6 +649,15 @@ export function AdminDashboard() {
       </div>
       {renderCheckbox('Mise en avant (featured)', 'featured')}
       {renderTextarea('Description complete', 'description', 5)}
+
+      {/* Gallery Manager */}
+      <div className="cyber-card p-4">
+        <h3 className="text-sm font-medium text-cyber-text mb-3 flex items-center gap-2">
+          <Image className="w-4 h-4 text-cyber-mauve" /> Screenshots / Galerie
+        </h3>
+        {renderGalleryManager('gallery', 'Images de la certification')}
+      </div>
+
       <button onClick={handleSaveCertification} disabled={saving} className="btn-primary inline-flex items-center gap-2">
         {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
         {saving ? 'Enregistrement...' : 'Enregistrer'}
@@ -677,7 +728,7 @@ export function AdminDashboard() {
         {renderInput('Nom', 'name', 'text', true)}
         {renderInput('Slug', 'slug', 'text', true)}
         {renderInput('Organisateur', 'organizer')}
-        {renderInput('Date', 'event_date', 'date')}
+        {renderDateInput('Date', 'event_date')}
         {renderInput('Duree', 'duration')}
         {renderInput('Nom du projet', 'project_name')}
         {renderInput('Role', 'role')}
@@ -690,8 +741,56 @@ export function AdminDashboard() {
           { value: 'top3', label: 'Top 3' }, { value: 'top5', label: 'Top 5' }, { value: 'participant', label: 'Participant' }
         ])}
         {renderSelect('Statut', 'status', [{ value: 'draft', label: 'Brouillon' }, { value: 'published', label: 'Publie' }])}
+        {renderInput('Score (optionnel)', 'score', 'number')}
       </div>
       {renderCheckbox('Mis en avant (featured)', 'featured')}
+      {renderCheckbox('Afficher le classement publiquement', 'show_position')}
+      {renderCheckbox('Afficher le score publiquement', 'show_score')}
+
+      {/* Icon Picker */}
+      <div className="cyber-card p-4">
+        <h3 className="text-sm font-medium text-cyber-text mb-3">Icône de l'événement</h3>
+        <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+          {[
+            { name: 'Trophy', label: '🏆' },
+            { name: 'Cloud', label: '☁️' },
+            { name: 'Server', label: '🖥️' },
+            { name: 'Brain', label: '🧠' },
+            { name: 'Shield', label: '🛡️' },
+            { name: 'Rocket', label: '🚀' },
+            { name: 'Globe', label: '🌐' },
+            { name: 'Zap', label: '⚡' },
+            { name: 'Lightbulb', label: '💡' },
+            { name: 'Target', label: '🎯' },
+            { name: 'GitBranch', label: '🔧' },
+            { name: 'BarChart3', label: '📊' },
+            { name: 'Flame', label: '🔥' },
+            { name: 'Building2', label: '🏗️' },
+            { name: 'Smartphone', label: '📱' },
+            { name: 'Terminal', label: '💻' },
+            { name: 'Palette', label: '🎨' },
+            { name: 'Microscope', label: '🔬' },
+            { name: 'Monitor', label: '🖥' },
+            { name: 'Link', label: '🔗' },
+          ].map((ic) => (
+            <button
+              key={ic.name}
+              type="button"
+              onClick={() => updateField('icon', ic.name)}
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-lg transition-all border"
+              style={{
+                background: (formData.icon || 'Trophy') === ic.name ? 'rgba(157, 107, 247, 0.2)' : 'rgba(255,255,255,0.03)',
+                borderColor: (formData.icon || 'Trophy') === ic.name ? 'rgba(157, 107, 247, 0.5)' : 'rgba(255,255,255,0.06)',
+                boxShadow: (formData.icon || 'Trophy') === ic.name ? '0 0 12px rgba(157, 107, 247, 0.3)' : 'none',
+              }}
+              title={ic.name}
+            >
+              {ic.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-cyber-text-muted mt-2">Sélectionné : {formData.icon || 'Trophy'}</p>
+      </div>
       {renderTextarea('Description du projet', 'project_description', 3)}
       {renderTextarea('Probleme', 'problem')}
       {renderTextarea('Solution', 'solution')}
@@ -830,6 +929,90 @@ export function AdminDashboard() {
     </div>
   );
 
+  const handleUpdateBookingStatus = async (id: string, status: string) => {
+    try {
+      await api.updateBooking(id, { status });
+      showMessage('success', 'Statut mis a jour');
+      fetchBookings();
+    } catch (err: any) {
+      showMessage('error', err.message);
+    }
+  };
+
+  const renderBookingsList = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-cyber-text">Reservations</h2>
+      </div>
+
+      <div className="grid gap-4">
+        {bookings.map((booking: any) => (
+          <div key={booking.id} className="cyber-card p-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-bold text-cyber-text">{booking.client_name}</h3>
+                <span className={cn('px-2 py-0.5 text-xs rounded-full border',
+                  booking.status === 'confirmed' ? 'bg-green-500/10 text-green-400 border-green-500/30' :
+                    booking.status === 'cancelled' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
+                      'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'
+                )}>
+                  {booking.status === 'confirmed' ? 'Confirme' : booking.status === 'cancelled' ? 'Annule' : 'En attente'}
+                </span>
+                <span className="text-cyber-text-muted text-xs bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+                  {booking.meeting_type}
+                </span>
+              </div>
+              <p className="text-sm text-cyber-text-muted mb-2">{booking.client_email}</p>
+              <div className="flex items-center gap-4 text-sm text-cyber-text-muted">
+                <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(booking.booking_date).toLocaleDateString('fr-FR')}</span>
+                <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {booking.booking_time}</span>
+              </div>
+              {booking.message && <p className="text-sm text-cyber-text mt-3 italic border-l-2 border-cyber-mauve/30 pl-3">"{booking.message}"</p>}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {booking.status !== 'confirmed' && (
+                <button
+                  onClick={() => handleUpdateBookingStatus(booking.id, 'confirmed')}
+                  className="p-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
+                  title="Confirmer"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                </button>
+              )}
+              {booking.status !== 'cancelled' && (
+                <button
+                  onClick={() => handleUpdateBookingStatus(booking.id, 'cancelled')}
+                  className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                  title="Annuler"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  if (confirm('Supprimer cette reservation ?')) {
+                    api.deleteBooking(booking.id).then(() => {
+                      showMessage('success', 'Reservation supprimee');
+                      fetchBookings();
+                    });
+                  }
+                }}
+                className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                title="Supprimer"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        ))}
+        {bookings.length === 0 && (
+          <div className="cyber-card p-12 text-center text-cyber-text-muted">Aucune reservation trouvée.</div>
+        )}
+      </div>
+    </div>
+  );
+
   const renderSettings = () => {
     // Initialize form with settings if empty
     if (Object.keys(formData).length === 0 && Object.keys(settings).length > 0) {
@@ -898,6 +1081,15 @@ export function AdminDashboard() {
         </div>
 
         <div className="cyber-card p-6">
+          <h3 className="text-lg font-medium text-cyber-text mb-4">Page d'Accueil (Hero)</h3>
+          <div className="space-y-4">
+            {renderTextarea('Titres du Hero (format JSON ex: ["Cloud Engineer", "DevOps Expert"])', 'hero_titles', 2)}
+            {renderTextarea('Badges Tech (format JSON ex: [{"icon":"Cloud", "label":"AWS"}])', 'hero_tech_badges', 4)}
+            <p className="text-xs text-cyber-text-muted mt-1">Icônes supportées: Cloud, Server, Brain, Shield, Globe, Zap, Cpu</p>
+          </div>
+        </div>
+
+        <div className="cyber-card p-6">
           <h3 className="text-lg font-medium text-cyber-text mb-4">Liens sociaux</h3>
           <div className="grid sm:grid-cols-2 gap-4">
             {renderInput('GitHub', 'github_url', 'url')}
@@ -928,6 +1120,7 @@ export function AdminDashboard() {
       case 'certifications': return renderCertificationsList();
       case 'hackathons': return renderHackathonsList();
       case 'categories': return renderCategoriesList();
+      case 'bookings': return renderBookingsList();
       case 'settings': return renderSettings();
       default: return renderDashboard();
     }
